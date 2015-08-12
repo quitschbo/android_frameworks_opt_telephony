@@ -574,6 +574,7 @@ public final class ImsPhoneCallTracker extends CallTracker {
                 TelephonyProperties.PROPERTY_DISABLE_CALL, "false");
 
         ret = (serviceState != ServiceState.STATE_POWER_OFF)
+            && SystemProperties.getBoolean("ro.trustme.telephony", false)
             && mPendingMO == null
             && !mRingingCall.isRinging()
             && !disableCall.equals("true")

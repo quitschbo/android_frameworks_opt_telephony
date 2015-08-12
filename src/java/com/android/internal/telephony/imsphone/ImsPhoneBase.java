@@ -247,7 +247,9 @@ abstract class ImsPhoneBase extends PhoneBase {
         String disableCall = SystemProperties.get(
                 TelephonyProperties.PROPERTY_DISABLE_CALL, "false");
         Rlog.v(LOG_TAG, "canDial(): disableCall = " + disableCall);
-        if (disableCall.equals("true")) return false;
+        if (disableCall.equals("true")
+                || !SystemProperties.getBoolean("ro.trustme.telephony", false))
+            return false;
 
         Rlog.v(LOG_TAG, "canDial(): ringingCall: " + getRingingCall().getState());
         Rlog.v(LOG_TAG, "canDial(): foregndCall: " + getForegroundCall().getState());
