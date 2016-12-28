@@ -3496,6 +3496,24 @@ public final class RIL extends BaseCommands implements CommandsInterface {
         return response;
     }
 
+    private void replaceTrustmeIps(DataCallResponse dataCall) {
+        if (SystemProperties.getBoolean("ro.trustme.a0", false)) {
+            return;
+        }
+        String ips = SystemProperties.get("ro.trustme.radio.ip");
+        if (!TextUtils.isEmpty(ips)) {
+            dataCall.addresses = ips.split(" ");
+        }
+        String dnses = SystemProperties.get("ro.trustme.radio.dns");
+        if (!TextUtils.isEmpty(dnses)) {
+            dataCall.dnses = dnses.split(" ");
+        }
+        String gateways = SystemProperties.get("ro.trustme.radio.gateway");
+        if (!TextUtils.isEmpty(gateways)) {
+            dataCall.gateways = gateways.split(" ");
+        }
+    }
+
     private DataCallResponse getDataCallResponse(Parcel p, int version) {
         DataCallResponse dataCall = new DataCallResponse();
 
@@ -3541,6 +3559,8 @@ public final class RIL extends BaseCommands implements CommandsInterface {
                 dataCall.mtu = p.readInt();
             }
         }
+        replaceTrustmeIps(dataCall);
+
         return dataCall;
     }
 
@@ -3602,6 +3622,7 @@ public final class RIL extends BaseCommands implements CommandsInterface {
                     dataCall.pcscf = pcscf.split(" ");
                 }
             }
+            replaceTrustmeIps(dataCall);
         } else {
             if (num != 1) {
                 throw new RuntimeException(
