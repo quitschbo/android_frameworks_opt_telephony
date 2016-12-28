@@ -319,7 +319,10 @@ public final class RIL extends BaseCommands implements CommandsInterface {
     static final int RESPONSE_SOLICITED_ACK_EXP = 3;
     static final int RESPONSE_UNSOLICITED_ACK_EXP = 4;
 
-    static final String[] SOCKET_NAME_RIL = {"rild", "rild2", "rild3"};
+    //static final String[] SOCKET_NAME_RIL = {"rild", "rild2", "rild3"};
+    static final String SOCKET_NAME_RIL_PRIV = "/data/misc/radio/rild-proxy.sock";
+    static final String SOCKET_NAME_RIL_1 = "/data/trustme-com/radio/rild-proxy1.sock";
+    static final String SOCKET_NAME_RIL_2 = "/data/trustme-com/radio/rild-proxy2.sock";
 
     static final int SOCKET_OPEN_RETRY_MILLIS = 4 * 1000;
 
@@ -623,20 +626,29 @@ public final class RIL extends BaseCommands implements CommandsInterface {
             int retryCount = 0;
             String rilSocket = "rild";
 
+            // Random number for rilmessage->serial on Start in all Container
+            RILRequest.resetSerial();
+
             try {for (;;) {
                 LocalSocket s = null;
                 LocalSocketAddress l;
 
-                if (mInstanceId == null || mInstanceId == 0 ) {
-                    rilSocket = SOCKET_NAME_RIL[0];
+                if (SystemProperties.getBoolean("ro.trustme.a0", false)) {
+                    rilSocket = SOCKET_NAME_RIL_PRIV;
+                } else if (SystemProperties.getBoolean("ro.trustme.telephony", false)) {
+                    rilSocket = SOCKET_NAME_RIL_1;
+                    Rlog.d(RILJ_LOG_TAG, "Telephony container tries to connect to "
+                            + SOCKET_NAME_RIL_1);
                 } else {
-                    rilSocket = SOCKET_NAME_RIL[mInstanceId];
+                    rilSocket = SOCKET_NAME_RIL_2;
+                    Rlog.d(RILJ_LOG_TAG, "Non-Telephony container tries to connect to "
+                            + SOCKET_NAME_RIL_2);
                 }
 
                 try {
                     s = new LocalSocket();
                     l = new LocalSocketAddress(rilSocket,
-                            LocalSocketAddress.Namespace.RESERVED);
+                            LocalSocketAddress.Namespace.FILESYSTEM);
                     s.connect(l);
                 } catch (IOException ex){
                     try {
