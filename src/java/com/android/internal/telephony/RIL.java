@@ -319,7 +319,7 @@ public final class RIL extends BaseCommands implements CommandsInterface {
     static final int RESPONSE_SOLICITED_ACK_EXP = 3;
     static final int RESPONSE_UNSOLICITED_ACK_EXP = 4;
 
-    static final String[] SOCKET_NAME_RIL = {"rild", "rild2", "rild3"};
+    static final String SOCKET_NAME_RIL = "/data/trustme-com/radio/rild";
 
     static final int SOCKET_OPEN_RETRY_MILLIS = 4 * 1000;
 
@@ -627,16 +627,16 @@ public final class RIL extends BaseCommands implements CommandsInterface {
                 LocalSocket s = null;
                 LocalSocketAddress l;
 
-                if (mInstanceId == null || mInstanceId == 0 ) {
-                    rilSocket = SOCKET_NAME_RIL[0];
-                } else {
-                    rilSocket = SOCKET_NAME_RIL[mInstanceId];
+                if (SystemProperties.getBoolean("ro.trustme.telephony", false)) {
+                    rilSocket = SOCKET_NAME_RIL;
+                    Rlog.d(RILJ_LOG_TAG, "Telephony container tries to connect to "
+                        + SOCKET_NAME_RIL);
                 }
 
                 try {
                     s = new LocalSocket();
                     l = new LocalSocketAddress(rilSocket,
-                            LocalSocketAddress.Namespace.RESERVED);
+                            LocalSocketAddress.Namespace.FILESYSTEM);
                     s.connect(l);
                 } catch (IOException ex){
                     try {
